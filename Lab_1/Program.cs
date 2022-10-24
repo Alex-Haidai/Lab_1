@@ -133,7 +133,7 @@ namespace Lab_1
             OpponentName = opponentAccount.UserName;
             GameRate = gameRate;
             CurrentGameStatus = status;
-            this.GameId = gameUniqueIndex.ToString();
+            GameId = gameUniqueIndex.ToString();
             gameUniqueIndex++;
         }
     }
