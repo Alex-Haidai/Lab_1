@@ -111,7 +111,6 @@ namespace Lab_1
         {
             var gameReport = new System.Text.StringBuilder();//створюємо динамічний рядок
             gameReport.AppendLine("Opponent name\tGame status\tGame Rating\tGame Id\t\tCurrent rating");//додаємо значення статистики
-            int gameIndex = 0;//змінна для індексування ігор
             foreach (var item in gameList)//цикл проходу по всіх іграх, в яких брав участь користувач
             {
                 gameReport.AppendLine($"{item.OpponentName}\t\t{item.CurrentGameStatus}\t\t{item.GameRate}\t\t{item.GameId}\t\t{item.PlayerCurrentRating}");//виводимо рядок інформації про поточну гру та користувача 
