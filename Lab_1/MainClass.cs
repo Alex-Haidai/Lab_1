@@ -16,6 +16,7 @@ namespace Lab_1
             firstAccount.LoseGame(secondAccount, 5, true);
             secondAccount.LoseGame(firstAccount, 3, true);
             secondAccount.LoseGame(firstAccount, 0, true);
+            firstAccount.TieGame(secondAccount, 3, true);
 
             Console.WriteLine($"{firstAccount.UserName} statistics:\n");//виводимо статистику обох гравців
             Console.WriteLine(firstAccount.GetStats());
