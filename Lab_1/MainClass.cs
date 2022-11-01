@@ -11,12 +11,12 @@ namespace Lab_1
             Console.WriteLine($"First player -  {firstAccount.UserName}");//виводимо їх імена
             Console.WriteLine($"Second player - {secondAccount.UserName}\n");
 
-            firstAccount.WinGame(secondAccount, 1, true);//робимо імітацію декількох ігор (true - маркер для зарахування гри до статистики обох гравців)
-            secondAccount.LoseGame(firstAccount, 1, true);
-            firstAccount.LoseGame(secondAccount, 5, true);
-            secondAccount.LoseGame(firstAccount, 3, true);
-            secondAccount.LoseGame(firstAccount, 0, true);
-            firstAccount.TieGame(secondAccount, 3, true);
+            Game.MakeGame(firstAccount,secondAccount, 1,GameAccount.AllPossibleGameStatus.Victory);//робимо імітацію декількох ігор (true - маркер для зарахування гри до статистики обох гравців)
+            Game.MakeGame(secondAccount, firstAccount, 1, GameAccount.AllPossibleGameStatus.Defeat);
+            Game.MakeGame(firstAccount, secondAccount, 5,GameAccount.AllPossibleGameStatus.Defeat);
+            Game.MakeGame(secondAccount, firstAccount, 3, GameAccount.AllPossibleGameStatus.Defeat);
+            Game.MakeGame(secondAccount, firstAccount, 0, GameAccount.AllPossibleGameStatus.Defeat);
+         
 
             Console.WriteLine($"{firstAccount.UserName} statistics:\n");//виводимо статистику обох гравців
             Console.WriteLine(firstAccount.GetStats());

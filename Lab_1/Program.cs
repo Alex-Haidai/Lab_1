@@ -1,29 +1,36 @@
 ﻿
+using static Lab_1.GameAccount;
+
 namespace Lab_1
 {
     public class GameAccount//клас ігрового акаунту
     {
         public string UserName { get; set; }//ім'я користувача
-        public int GamesCount { get; set; }//кількість ігор користувача
-
-        private List<Game> gameList = new();//список ігор користувача
-        private static List<GameAccount> accountList = new();//список усіх ігрових акаунтів
+        public int GamesCount 
+        {
+            get 
+            {
+                return GameList.Count;
+            }
+        }//кількість ігор користувача
+        private readonly List<Game> GameList = new();//список ігор користувача
+        private static readonly List<GameAccount> s_accountList = new();//список усіх ігрових акаунтів
         public enum AllPossibleGameStatus//статус гри
         {
-            Victory, Defeat, Tie
+            Victory, Defeat
         }
         public int CurrentRating//поточний рейтинг коричтувача
         {
             get
             {
                 int rating = 1;//ініціалізуємо початковий рейтинг
-                foreach (var item in gameList)//цикл проходу по всіх іграх, в яких брав участь користувач
+                foreach (var item in GameList)//цикл проходу по всіх іграх, в яких брав участь користувач
                 {
-                    if (item.CurrentGameStatus == AllPossibleGameStatus.Victory)//якщо перемога додаємо до поточного рейтингу рейтинг гри
+                    if (item.WinnerAccount.UserName.Equals(UserName))//якщо перемога додаємо до поточного рейтингу рейтинг гри
                     {
                         rating += item.GameRate;
                     }
-                    else if (item.CurrentGameStatus == AllPossibleGameStatus.Defeat)//якщо поразка
+                    else//якщо поразка
                     {
                         if (rating - item.GameRate >= 1)//якщо рейтинг гри менший поточного рейтинга
                         {
@@ -43,12 +50,12 @@ namespace Lab_1
         {
             UserName = name;
             GameAccountIsValid(this);
-            accountList.Add(this);
+            s_accountList.Add(this);
         }
 
         private static void GameAccountIsValid(GameAccount currentAccount) //пеервірка нового акаунту
         {
-            foreach (var item in accountList)
+            foreach (var item in s_accountList)
             {
                 if (item.UserName == currentAccount.UserName)
                 {
@@ -57,81 +64,35 @@ namespace Lab_1
             }
         }
 
-        public void WinGame(GameAccount opponentAccount, int rating, bool recordGameForBothPlayers)//метод, який запускається у разі виграної гри
+        public void WinGame(Game game)//метод, який запускається у разі виграної гри
         {//на вхід приймає об'єкт акаунту опонента, рейтинг гри та маркер, що визначає чи зарахується гра обом користувачам
-            GameIsValid(opponentAccount, rating);
-            var game = new Game(opponentAccount, rating, AllPossibleGameStatus.Victory);//створюємо об'єкт класу гри
-            gameList.Add(game);//додаємо об'єкт до списку ігор
-            GamesCount++;//додаємо лічильник ігор користувача
-            game.PlayerCurrentRating = CurrentRating;
-            if (recordGameForBothPlayers == true)
-            {
-                opponentAccount.LoseGame(this, rating, false);//якщо маркер позитивний, викликаємо метод поразки для акаунта опонента з протилежним маркером
-                MakeTheSameGameId(game.GameId, opponentAccount);
-            }
+            GameList.Add(game);
+            game.WinnerAccountRate = CurrentRating;
 
         }
 
-        public void LoseGame(GameAccount opponentAccount, int rating, bool recordGameForBothPlayers)//метод, який запускається у разі програної гри
+        public void LoseGame(Game game)//метод, який запускається у разі програної гри
         {//на вхід приймає об'єкт акаунту опонента, рейтинг гри та маркер, що визначає чи зарахується гра обом користувачам
-            GameIsValid(opponentAccount, rating);
-            var game = new Game(opponentAccount, rating, AllPossibleGameStatus.Defeat);//створюємо об'єкт класу гри
-            gameList.Add(game);//додаємо об'єкт до списку ігор
-            GamesCount++;//додаємо лічильник ігор користувача
-            game.PlayerCurrentRating = CurrentRating;
-            if (recordGameForBothPlayers == true)
-            {
-                opponentAccount.WinGame(this, rating, false);//якщо маркер позитивний, викликаємо метод перемоги для акаунта опонента з протилежним маркером
-                MakeTheSameGameId(game.GameId, opponentAccount);
-            }
+            GameList.Add(game);
+            game.LoserAccountRate = CurrentRating;
 
-        }
-
-        public void TieGame(GameAccount opponentAccount, int rating, bool recordGameForBothPlayers)//метод, який запускається у разі нічиєї
-        {
-            GameIsValid(opponentAccount, rating);
-            var game = new Game(opponentAccount, rating, AllPossibleGameStatus.Tie);//створюємо об'єкт класу гри
-            gameList.Add(game);//додаємо об'єкт до списку ігор
-            GamesCount++;//додаємо лічильник ігор користувача
-            game.PlayerCurrentRating = CurrentRating;
-            if (recordGameForBothPlayers == true)
-            {
-                opponentAccount.TieGame(this, rating, false);//якщо маркер позитивний, викликаємо метод нічиєї для акаунта опонента з протилежним маркером
-                MakeTheSameGameId(game.GameId, opponentAccount);
-            }
-        }
-
-        private void GameIsValid(GameAccount opponentAccount, int rating) //метод перевірки гри
-        {
-            if (rating < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(rating), "Rating of game must be positive");//якщо рейтинг гри від'ємний викидаємо виключення
-            }
-            if (opponentAccount == this)
-            {
-                throw new InvalidOperationException("You can`t play with yourself!");//якщо акаунти однакові викидаємо виключення
-            }
-        }
-
-        private void MakeTheSameGameId(string gameId, GameAccount opponentAccount)//метод, що робить однаковим id гри для обох користувачів
-        {
-            for (int i = 0; i < opponentAccount.gameList.Count; i++)
-            {
-                if (i == opponentAccount.gameList.Count - 1)
-                {
-                    opponentAccount.gameList[i].GameId = this.gameList[i].GameId;
-                }
-
-            }
         }
 
         public string GetStats()//метод отримання статистики користувача
         {
             var gameReport = new System.Text.StringBuilder();//створюємо динамічний рядок
             gameReport.AppendLine("Opponent name\tGame status\tGame Rating\tGame Id\t\tCurrent rating");//додаємо значення статистики
-            foreach (var item in gameList)//цикл проходу по всіх іграх, в яких брав участь користувач
+            foreach (var item in GameList)//цикл проходу по всіх іграх, в яких брав участь користувач
             {
-                gameReport.AppendLine($"{item.OpponentName}\t\t{item.CurrentGameStatus}\t\t{item.GameRate}\t\t{item.GameId}\t\t{item.PlayerCurrentRating}");//виводимо рядок інформації про поточну гру та користувача 
+                if (item.WinnerAccount.UserName.Equals(UserName))
+                {
+                    gameReport.AppendLine($"{item.LoserAccount.UserName}\t\t{AllPossibleGameStatus.Victory}\t\t{item.GameRate}\t\t{item.GameId}\t\t{item.WinnerAccountRate}");//виводимо рядок інформації про поточну гру та користувача 
+                }
+                else
+                {
+
+                    gameReport.AppendLine($"{item.WinnerAccount.UserName}\t\t{AllPossibleGameStatus.Defeat}\t\t{item.GameRate}\t\t{item.GameId}\t\t{item.LoserAccountRate}");
+                }
             }
             return gameReport.ToString();
         }
@@ -139,20 +100,51 @@ namespace Lab_1
 
     public class Game//клас гри
     {
-        public string GameId { get; set; }
-        private static int gameUniqueIndex = 12345432;
-        public string OpponentName { get; }//назва акаунту опонента
-        public GameAccount.AllPossibleGameStatus CurrentGameStatus { get; set; }
+        public GameAccount WinnerAccount { get; set; }
+        public GameAccount LoserAccount { get; set; }
+        public  int GameId { get; set; }
+        private static int gameUniqueIndex = 1;
         public int GameRate { get; }//рейтинг гри
-        public int PlayerCurrentRating { get; set; }
+        public int WinnerAccountRate { get; set; }
+        public int LoserAccountRate { get; set; }
 
-        public Game(GameAccount opponentAccount, int gameRate, GameAccount.AllPossibleGameStatus status)//конструктор
+
+        public Game(GameAccount firstAccount, GameAccount secondAccount, int gameRate)//конструктор
         {
-            OpponentName = opponentAccount.UserName;
+            WinnerAccount = firstAccount;
+            LoserAccount = secondAccount;
             GameRate = gameRate;
-            CurrentGameStatus = status;
-            GameId = gameUniqueIndex.ToString();
+            GameId = gameUniqueIndex;
             gameUniqueIndex++;
+        }
+
+        public static void MakeGame(GameAccount firstAccount, GameAccount secondAccount, int gameRate, AllPossibleGameStatus status)
+        {
+            GameIsValid(firstAccount, secondAccount, gameRate);
+            if (status.Equals(AllPossibleGameStatus.Victory))
+            {
+                var game = new Game(firstAccount, secondAccount, gameRate);//створюємо об'єкт класу гри
+                firstAccount.WinGame(game);
+                secondAccount.LoseGame(game);
+            }
+            else
+            {
+                var game = new Game(secondAccount, firstAccount, gameRate);//створюємо об'єкт класу гри
+                firstAccount.LoseGame(game);
+                secondAccount.WinGame(game);
+            }
+        }
+
+        private static void GameIsValid(GameAccount currentAccount, GameAccount opponentAccount, int rating) //метод перевірки гри
+        {
+            if (rating < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(rating), "Rating of game must be positive");//якщо рейтинг гри від'ємний викидаємо виключення
+            }
+            if (currentAccount.Equals(opponentAccount))
+            {
+                throw new InvalidOperationException("You can`t play with yourself!");//якщо акаунти однакові викидаємо виключення
+            }
         }
     }
 }
